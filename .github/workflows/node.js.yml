@@ -1,0 +1,80 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    env: 
+      DOCKER_REGISTRY: hub.docker.com
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencie
+      run: npm ci
+    - name: Build app
+      run: npm run build --if-present
+    - name: Test app
+      run: npm test
+    - name: Docker Login
+      uses: docker/login-action@v1.9.0
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        logout: true
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v2.5.0
+      with:
+        # List of extra privileged entitlement (eg. network.host,security.insecure)
+        allow: # optional
+        # List of build-time variables
+        build-args: # optional
+        # Builder instance
+        builder: # optional
+        # List of external cache sources for buildx (eg. user/app:cache, type=local,src=path/to/dir)
+        cache-from: # optional
+        # List of cache export destinations for buildx (eg. user/app:cache, type=local,dest=path/to/dir)
+        cache-to: # optional
+        # Build's context is the set of files located in the specified PATH or URL
+        context: # optional
+        # Path to the Dockerfile
+        file: Dockerfile
+        # List of metadata for an image
+        labels: # optional
+        # Load is a shorthand for --output=type=docker
+        load: # optional, default is false
+        # Set the networking mode for the RUN instructions during build
+        network: # optional
+        no-cache: true
+        # List of output destinations (format: type=local,dest=path)
+        outputs: # optional
+        # List of target platforms for build
+        platforms: # optional
+        # Always attempt to pull a newer version of the image
+        pull: # optional, default is false
+        # Push is a shorthand for --output=type=registry
+        push: # optional, default is false
+        # List of secrets to expose to the build (eg. key=string, GIT_AUTH_TOKEN=mytoken)
+        secrets: # optional
+        # List of secret files to expose to the build (eg. key=filename, MY_SECRET=./secret.txt)
+        secret-files: # optional
+        # List of SSH agent socket or keys to expose to the build
+        ssh: # optional
+        # List of tags
+        tags: # optional
+        # Sets the target stage to build
+        target: # optional
+        # GitHub Token used to authenticate against a repository for Git context
+        github-token: # optional, default is ${{ github.token }}
