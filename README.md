@@ -1,5 +1,7 @@
 # ci-cd-task-node-server
 
+This repository is test task for new employees
+
 Simple web server. By default, uses port 3000
 
 ## Install required packages
